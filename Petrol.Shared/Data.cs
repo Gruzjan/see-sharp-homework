@@ -12,11 +12,11 @@ namespace Petrol.Shared
         public int lpgRefillCount = 0;
         public decimal pbStatus = 45;
         public decimal lpgStatus = 30;
-        public List<DateTime> lpgOnlyDays = new List<DateTime>();
+        public int lpgOnlyDaysCount = 0;
         public DateTime firstLowOnGasDay;
-        public string json = "[";
-        public decimal lpgLiters = 0;
-        public decimal pbLiters = 0;
+        public List<DayData> daysData = new List<DayData>();
+        public decimal lpgLitersUsed = 0;
+        public decimal pbLitersUsed = 0;
 
         public Data()
         {
@@ -32,26 +32,28 @@ namespace Petrol.Shared
 
             for (int i = 0; i < distances.Count(); i++)
             {
-                json += string.Format("{{\"Date\":\"{0}\",\"Przed\":{1},\"Po\":", dates.ElementAt(i).ToShortDateString(), lpgStatus.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture));
+                DayData day = new DayData();
+                day.date = dates.ElementAt(i).ToShortDateString();
+                day.before = lpgStatus;
 
                 if (lpgStatus > 15)
                 {
                     decimal result = Math.Round((9m * distances.ElementAt(i) / 100m), 2);
-                    lpgLiters += result;
+                    lpgLitersUsed += result;
                     lpgStatus -= result;
-                    lpgOnlyDays.Add(dates.ElementAt(i));
+                    lpgOnlyDaysCount++;
                 }
                 else
                 {
-                    if(lpgStatus < 5.25m && firstLowOnGasDay == DateTime.MinValue)
+                    if(lpgStatus <= 5.25m && firstLowOnGasDay == DateTime.MinValue)
                         firstLowOnGasDay = dates.ElementAt(i);
 
                     decimal result = Math.Round((9m * distances.ElementAt(i) / 2 / 100m), 2);
-                    lpgLiters += result;
+                    lpgLitersUsed += result;
                     lpgStatus -= result;
 
                     result = Math.Round((6m * distances.ElementAt(i) / 2 / 100m), 2);
-                    pbLiters += result;
+                    pbLitersUsed += result;
                     pbStatus -= result;
                 }
 
@@ -67,17 +69,16 @@ namespace Petrol.Shared
                     pbStatus = 45;
                 }
 
-                if (i == distances.Count() - 1)
-                    json += string.Format("{0}}}]", lpgStatus.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture));
-                else
-                    json += string.Format("{0}}},", lpgStatus.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture));
+                day.after = lpgStatus;
+                daysData.Add(day);
             }
         }
 
-        public void saveToJson()
+        public Tuple<decimal, decimal> getExpenses(decimal lpgPrice, decimal pbPrice, decimal gasTankPrice)
         {
-            File.WriteAllText("./data.json", json);
+            return Tuple.Create(Math.Round(lpgLitersUsed * lpgPrice, 2) + gasTankPrice, Math.Round(pbLitersUsed * pbPrice, 2));
         }
+        
 
     }
 }

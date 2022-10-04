@@ -1,34 +1,45 @@
 ﻿using Petrol.Shared;
 using System.Linq.Expressions;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 
 public class Program
 {
     public static void Main()
     {
         Data info = new Data();
+        int op;
+        bool cont = true;
 
-        // 1. zadanie
-        //Console.WriteLine($"PB95: {info.pbRefillCount} razy, a LPG: {info.lpgRefillCount} razy.");
-
-
-        // 2. zadanie
-        /*foreach (var elem in info.lpgOnlyDays)
+        while (cont)
         {
-            Console.WriteLine(elem);
-        }*/
+            Console.WriteLine("[0] Exit\n[1] Refil counts\n[2] Days with lpg only\n[3] First day low on lpg\n[4] Log tank status\n[5] Calculate cost");
+            op = Convert.ToInt32(Console.ReadLine());
 
-
-        // 3. zadanie
-        //Console.WriteLine(info.firstLowOnGasDay);
-
-
-        //4. zadanie
-        //Console.WriteLine(info.json);
-        //info.saveToJson();
-
-
-        // 5. zadanie
-        Console.WriteLine($"Koszt LPG: {Math.Round(info.lpgLiters * 2.29m, 2)} + 1600 = {Math.Round(info.lpgLiters * 2.29m + 1600, 2)}\nKoszt PB95: {Math.Round(info.pbLiters * 4.99m, 2)}");
+            switch (op)
+            {
+                case 0: cont = false; break;
+                case 1: Console.Clear(); Console.WriteLine($"PB95: {info.pbRefillCount} times, LPG: {info.lpgRefillCount} times."); break;
+                case 2: Console.Clear(); Console.WriteLine($"Lpg only days: {info.lpgOnlyDaysCount}"); break;
+                case 3: Console.Clear(); Console.WriteLine($"First low on lpg day: {info.firstLowOnGasDay.ToShortDateString()}"); break;
+                case 4: Console.Clear(); Console.WriteLine("Date\t\tBefore\tAfter");
+                        foreach(var day in info.daysData)
+                            Console.WriteLine($"{day.date}\t{day.before}\t{day.after}");
+                        Console.WriteLine("Save data to JSON?\n[1] No, thanks [2] Yes, please");
+                        op = Convert.ToInt32(Console.ReadLine());
+                        switch (op)
+                        {
+                            case 1: break;
+                            case 2: File.WriteAllText("./data.json", JsonSerializer.Serialize(info.daysData)); break;
+                        }
+                        break;
+                case 5: Console.Clear();
+                        decimal lpgLiterPrice = 2.29m, pbLiterPrice = 4.99m, gasTankPrice = 1600m;
+                        Tuple<decimal, decimal> result = info.getExpenses(lpgLiterPrice, pbLiterPrice, gasTankPrice);
+                        Console.WriteLine($"Koszt LPG: {result.Item1}\nKoszt PB95: {result.Item2}");
+                        break;
+            }
+        }
 
     }
 }
