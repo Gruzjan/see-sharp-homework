@@ -13,7 +13,7 @@ public class Program
 
         while (cont)
         {
-            Console.WriteLine("[0] Exit\n[1] Refil counts\n[2] Days with lpg only\n[3] First day low on lpg\n[4] Log tank status\n[5] Calculate cost");
+            Console.WriteLine("[0] Exit\n[1] Refil counts\n[2] Days with lpg only\n[3] First day low on lpg\n[4] Log lpg tank status\n[5] Calculate cost");
             op = Convert.ToInt32(Console.ReadLine());
 
             switch (op)

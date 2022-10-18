@@ -10,13 +10,15 @@ namespace Petrol.Shared
         string lpgFile = Properties.Resources.lpg;
         public int pbRefillCount = 0;
         public int lpgRefillCount = 0;
+        public decimal pbOnlyStatus = 45;
         public decimal pbStatus = 45;
         public decimal lpgStatus = 30;
         public int lpgOnlyDaysCount = 0;
         public DateTime firstLowOnGasDay;
         public List<DayData> daysData = new List<DayData>();
-        public decimal lpgLitersUsed = 0;
+        public decimal pbOnlyLitersUsed = 0;
         public decimal pbLitersUsed = 0;
+        public decimal lpgLitersUsed = 0;
 
         public Data()
         {
@@ -36,9 +38,13 @@ namespace Petrol.Shared
                 day.date = dates.ElementAt(i).ToShortDateString();
                 day.before = lpgStatus;
 
+                decimal result = Math.Round((6m * distances.ElementAt(i) / 100m), 2);
+                pbOnlyLitersUsed += result;
+                pbOnlyStatus -= result;
+
                 if (lpgStatus > 15)
                 {
-                    decimal result = Math.Round((9m * distances.ElementAt(i) / 100m), 2);
+                    result = Math.Round((9m * distances.ElementAt(i) / 100m), 2);
                     lpgLitersUsed += result;
                     lpgStatus -= result;
                     lpgOnlyDaysCount++;
@@ -48,7 +54,7 @@ namespace Petrol.Shared
                     if(lpgStatus <= 5.25m && firstLowOnGasDay == DateTime.MinValue)
                         firstLowOnGasDay = dates.ElementAt(i);
 
-                    decimal result = Math.Round((9m * distances.ElementAt(i) / 2 / 100m), 2);
+                    result = Math.Round((9m * distances.ElementAt(i) / 2 / 100m), 2);
                     lpgLitersUsed += result;
                     lpgStatus -= result;
 
@@ -69,6 +75,11 @@ namespace Petrol.Shared
                     pbStatus = 45;
                 }
 
+                if(pbOnlyStatus < 40)
+                {
+                    pbOnlyStatus = 45;
+                }
+
                 day.after = lpgStatus;
                 daysData.Add(day);
             }
@@ -76,7 +87,8 @@ namespace Petrol.Shared
 
         public Tuple<decimal, decimal> getExpenses(decimal lpgPrice, decimal pbPrice, decimal gasTankPrice)
         {
-            return Tuple.Create(Math.Round(lpgLitersUsed * lpgPrice, 2) + gasTankPrice, Math.Round(pbLitersUsed * pbPrice, 2));
+            return Tuple.Create(Math.Round(lpgLitersUsed * lpgPrice, 2) + gasTankPrice + Math.Round(pbLitersUsed * pbPrice, 2), Math.Round(pbOnlyLitersUsed * pbPrice, 2));
+
         }
         
 
